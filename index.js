@@ -1623,7 +1623,7 @@ app.get("/", (req, res) => {
     //   "/public/index.html" +
     "Welcome To My World!! ( -ω ･)▄︻┻┳══━一"
   );
-  //res.send("FOR BATTLE!! GAME ( -ω ･)▄︻┻┳══━一");
+  //res.send("FOR BATTLE!! GAME ( -ω ･)▄︻┻┳══━一  ");
 });
 
 app.listen(port, () => {
