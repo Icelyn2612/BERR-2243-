@@ -17,7 +17,7 @@ app.post("/adminLogin", async (req, res) => {
   // Check if the admin already exists
   let resp = await client
     .db("Assignment")
-    .collection("players")
+    .collection("admin")
     .findOne({
       $and: [{ name: req.body.name }, { email: req.body.email }],
     });
@@ -1629,7 +1629,7 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
+${process.env.MongoDb_password}
 //Path:package.json
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { message } = require("statuses");
