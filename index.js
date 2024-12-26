@@ -2,34 +2,8 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const express = require("express");
 const jwt = require("jsonwebtoken");
-//const { Server } = require("socket.io");
-//const http = require("http");
-//const app = express();
+const app = express();
 const port = process.env.PORT || 3000;
-
-// const WebSocket = require("ws");
-//const wss = new WebSocket.Server({ server });
-
-// // Create HTTP server and pass it to Socket.IO
-// const server = http.createServer(app);
-// const io = new Server(server);
-
-const app = require("express")();
-const http = require("http").Server(app);
-const io = require("socket.io")(http);
-
-io.on("connection", (socket) => {
-  console.log("A client connected");
-
-  // Send real-time data to the client
-  setInterval(() => {
-    socket.emit("realtimeData", "Real-time update message");
-  }, 1000);
-});
-
-http.listen(3000, () => {
-  console.log("Server running on port 3000");
-});
 
 app.use(express.json());
 app.use(express.static("public"));
