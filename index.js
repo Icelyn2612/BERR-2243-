@@ -1630,7 +1630,6 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-//Path:package.json
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { message } = require("statuses");
 const uri = `mongodb+srv://b022210249:${process.env.MongoDb_password}@cluster0.qexjojg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
