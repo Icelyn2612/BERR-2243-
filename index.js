@@ -4,7 +4,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet"); //HTTPS
-const csurf = require("csurf"); //CSRF
+//const csurf = require("csurf"); //CSRF
 const mongoSanitize = require("express-mongo-sanitize"); //Input JSON
 const cookieParser = require("cookie-parser"); //JSON parser
 const axios = require("axios"); //reCAPTCHA server
@@ -73,62 +73,63 @@ app.use((req, res, next) => {
 });
 
 // Enable CSRF protection middleware
-app.use(csurf({ cookie: true }));
-// Route to get CSRF token
-app.get("/csrf-token", (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
-});
+// app.use(csurf({ cookie: true }));
+
+// // Route to get CSRF token
+// app.get("/csrf-token", (req, res) => {
+//   res.json({ csrfToken: req.csrfToken() });
+// });
 
 //API FOR ADMIN
-//login for admin
-app.post("/adminLogin", async (req, res) => {
-  // Check if all required fields are provided
-  if (!req.body.name || !req.body.email) {
-    return res.status(400).send("name and email are required. ( ˘ ³˘)❤");
-  }
-  // Check if the admin already exists
-  let resp = await client
-    .db("Assignment")
-    .collection("admin")
-    .findOne({
-      $and: [{ name: req.body.name }, { email: req.body.email }],
-    });
-  if (!resp) {
-    res.send("Admin not found ⸨◺_◿⸩");
-  } else {
-    // Check if password is true
-    if (resp.password) {
-      if (bcrypt.compareSync(req.body.password, resp.password)) {
-        //if the password is correct, send the token and message
-        const token = jwt.sign(
-          {
-            id: resp._id,
-            name: resp.name,
-            email: resp.email,
-            roles: resp.roles,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" }
-        );
-        console.log(token);
-        res.status(200).send({
-          message:
-            "Admin login successful. Do yer thang in the admin panel!!\n(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )",
-          token: token,
-        });
-      } else {
-        //if the password is wrong, send the message
-        res.send("Wrong Password ⸨◺_◿⸩");
-      }
-    } else {
-      //if the password is not provided, send the message
-      res.send("Password not provided ⸨◺_◿⸩");
-    }
-  }
-});
+// //login for admin
+// app.post("/adminLogin", async (req, res) => {
+//   // Check if all required fields are provided
+//   if (!req.body.name || !req.body.email) {
+//     return res.status(400).send("name and email are required. ( ˘ ³˘)❤");
+//   }
+//   // Check if the admin already exists
+//   let resp = await client
+//     .db("Assignment")
+//     .collection("admin")
+//     .findOne({
+//       $and: [{ name: req.body.name }, { email: req.body.email }],
+//     });
+//   if (!resp) {
+//     res.send("Admin not found ⸨◺_◿⸩");
+//   } else {
+//     // Check if password is true
+//     if (resp.password) {
+//       if (bcrypt.compareSync(req.body.password, resp.password)) {
+//         //if the password is correct, send the token and message
+//         const token = jwt.sign(
+//           {
+//             id: resp._id,
+//             name: resp.name,
+//             email: resp.email,
+//             roles: resp.roles,
+//           },
+//           process.env.JWT_SECRET,
+//           { expiresIn: "1h" }
+//         );
+//         console.log(token);
+//         res.status(200).send({
+//           message:
+//             "Admin login successful. Do yer thang in the admin panel!!\n(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )",
+//           token: token,
+//         });
+//       } else {
+//         //if the password is wrong, send the message
+//         res.send("Wrong Password ⸨◺_◿⸩");
+//       }
+//     } else {
+//       //if the password is not provided, send the message
+//       res.send("Password not provided ⸨◺_◿⸩");
+//     }
+//   }
+// });
 
 // Admin Login API
-app.post("/adminLogin2", login_RateLimiter, async (req, res) => {
+app.post("/adminLogin", login_RateLimiter, async (req, res) => {
   if (
     !req.body.name ||
     !req.body.email ||
@@ -504,14 +505,14 @@ app.post("/register", async (req, res) => {
   // Check if the username or email already exists
   let existing =
     (await client.db("Assignment").collection("players").findOne({
-      name: req.body.username,
+      name: req.body.name,
     })) ||
     (await client.db("Assignment").collection("players").findOne({
       email: req.body.email,
     }));
   //if the username or email already exists, return an error
   if (existing) {
-    res.status(400).send("username or email already exist");
+    return res.status(400).send("name or email already exist");
   } else {
     //if not, hash the password
     const hash = bcrypt.hashSync(req.body.password, 10);
@@ -531,7 +532,7 @@ app.post("/register", async (req, res) => {
       .collection("characters_of_players")
       .countDocuments();
     //insert the data into the database
-    let resq = await client
+    await client
       .db("Assignment")
       .collection("players")
       .insertOne({
@@ -594,6 +595,16 @@ app.post("/userLogin", async (req, res) => {
       .status(400)
       .send("gmail,password and g_recaptcha_response are required. ( ˘ ³˘)❤");
   }
+  // Input Validation
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+    g_recaptcha_response: Joi.string().required(),
+  });
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).send(error.details[0].message);
+  }
   // Validate reCAPTCHA
   const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
   if (!verifyHuman) {
@@ -605,7 +616,9 @@ app.post("/userLogin", async (req, res) => {
   let resp = await client.db("Assignment").collection("players").findOne({
     email: req.body.gmail,
   });
+
   await delayRandom(); //Random delay between 2 and 4 seconds for both valid and invalid responses
+
   if (!resp) {
     res.send("User not found ⸨◺_◿⸩");
   } else {
