@@ -597,11 +597,11 @@ app.post("/register", async (req, res) => {
 //login for users
 app.post("/userLogin", async (req, res) => {
   // Check if gmail, passd and recaptcha fields are provided
-  if (!req.body.gmail || !req.body.password || !req.body.g_recaptcha_response) {
+  if (!req.body.email || !req.body.password || !req.body.g_recaptcha_response) {
     //if not provided, return an error
     return res
       .status(400)
-      .send("gmail,password and g_recaptcha_response are required. ( ˘ ³˘)❤");
+      .send("email,password and g_recaptcha_response are required. ( ˘ ³˘)❤");
   }
   // Input Validation
   const schema = Joi.object({
