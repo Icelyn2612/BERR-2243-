@@ -65,12 +65,18 @@ app.use(
 );
 
 // Use Middleware express-mongo-sanitize to sanitize inputs before they are sent to the database
-app.use((req, res, next) => {
-  req.body = mongoSanitize(req.body);
-  req.query = mongoSanitize(req.query);
-  req.params = mongoSanitize(req.params);
-  next();
-});
+// app.use((req, res, next) => {
+//   req.body = mongoSanitize(req.body);
+//   req.query = mongoSanitize(req.query);
+//   req.params = mongoSanitize(req.params);
+//   next();
+// });
+// app.use(
+//   mongoSanitize({
+//     replaceWith: "_", // Replace prohibited characters with an underscore
+//   })
+// );
+//app.use(mongoSanitize());
 
 // Enable CSRF protection middleware
 // app.use(csurf({ cookie: true }));
@@ -79,6 +85,13 @@ app.use((req, res, next) => {
 // app.get("/csrf-token", (req, res) => {
 //   res.json({ csrfToken: req.csrfToken() });
 // });
+function customSanitize(req, res, next) {
+  req.body = mongoSanitize.sanitize(req.body, { replaceWith: "" });
+  req.query = mongoSanitize.sanitize(req.query, { replaceWith: "" });
+  req.params = mongoSanitize.sanitize(req.params, { replaceWith: "" });
+  next();
+}
+app.use(customSanitize);
 
 //API FOR ADMIN
 // //login for admin
