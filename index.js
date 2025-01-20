@@ -85,12 +85,7 @@ app.use(
 // app.get("/csrf-token", (req, res) => {
 //   res.json({ csrfToken: req.csrfToken() });
 // });
-function customSanitize(req, res, next) {
-  req.body = mongoSanitize.sanitize(req.body, { replaceWith: "" });
-  req.query = mongoSanitize.sanitize(req.query, { replaceWith: "" });
-  req.params = mongoSanitize.sanitize(req.params, { replaceWith: "" });
-  next();
-}
+
 app.use(customSanitize);
 
 //API FOR ADMIN
@@ -1804,6 +1799,13 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+function customSanitize(req, res, next) {
+  req.body = mongoSanitize.sanitize(req.body, { replaceWith: "" });
+  req.query = mongoSanitize.sanitize(req.query, { replaceWith: "" });
+  req.params = mongoSanitize.sanitize(req.params, { replaceWith: "" });
+  next();
+}
 
 // // Function to simulate time delay (in milliseconds)
 // function delay(ms) {
