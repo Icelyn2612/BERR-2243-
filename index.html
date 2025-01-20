@@ -1,94 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display Timezone, Current Time, and WebSocket Example</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-        .timezone-display {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-        .time-display {
-            font-size: 2em;
-            font-weight: bold;
-            color: #007BFF;
-        }
-        .message {
-            font-size: 1.2em;
-            margin-top: 20px;
-        }
-        .log {
-            margin-top: 20px;
-            font-family: monospace;
-            background: #eee;
-            padding: 10px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            text-align: left;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reCAPTCHA Test</title>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
-    <h1>Timezone, Current Time & WebSocket Demo</h1>
-    <div class="timezone-display" id="timezone"></div>
-    <div class="time-display" id="current-time"></div>
-    <div class="message">Stay productive and connected with WebSocket!</div>
-    <div class="log" id="log"></div>
-
-    <script>
-        // Get the user's timezone
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        document.getElementById('timezone').textContent = `Your current timezone is: ${timezone}`;
-
-        // Function to update the current time
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { timeZone: timezone, hour12: true });
-            document.getElementById('current-time').textContent = `Current time: ${timeString}`;
-        }
-
-        // Update the time every second
-        setInterval(updateTime, 1000);
-        updateTime();
-
-        // WebSocket connection
-        const logElement = document.getElementById('log');
-        const ws = new WebSocket('ws://192.168.0.137:8080'); // Replace with your WebSocket server URL
-
-        // Log messages to the page
-        function logMessage(message) {
-            const logEntry = document.createElement('div');
-            logEntry.textContent = message;
-            logElement.appendChild(logEntry);
-        }
-
-        // WebSocket event listeners
-        ws.onopen = () => {
-            logMessage('WebSocket connected');
-            // Example: Send a message to the server
-            ws.send(JSON.stringify({ event: 'timezone', data: timezone }));
-        };
-
-        ws.onmessage = (event) => {
-            logMessage(`Message from server: ${event.data}`);
-        };
-
-        ws.onclose = () => {
-            logMessage('WebSocket disconnected');
-        };
-
-        ws.onerror = (error) => {
-            logMessage(`WebSocket error: ${error.message}`);
-        };
-    </script>
+  <form action="https://berr2243wsw.azurewebsites.net" method="POST">
+    <div class="g-recaptcha" data-sitekey="RECAPTCHA_SITE_KEY"></div>
+    <br/>
+    <input type="submit" value="Submit">
+  </form>
 </body>
 </html>

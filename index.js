@@ -7,7 +7,7 @@ const helmet = require("helmet"); //HTTPS
 const csurf = require("csurf"); //CSRF
 const mongoSanitize = require("express-mongo-sanitize"); //Input JSON
 const cookieParser = require("cookie-parser"); //JSON parser
-const axios = require("axios"); //HTTP server
+const axios = require("axios"); //reCAPTCHA server
 const router = express.Router(); //
 
 const app = express();
@@ -141,13 +141,7 @@ app.post("/adminLogin2", login_RateLimiter, async (req, res) => {
         "name,email,password and g_recaptcha_response are required. ( ˘ ³˘)❤"
       );
   }
-  // Validate reCAPTCHA
-  const verifyHuman = await verifyRecaptchaToken(g_recaptcha_response);
-  if (!verifyHuman) {
-    return res
-      .status(400)
-      .send("reCAPTCHA verification failed. Please try again.");
-  }
+
   // Input Validation
   const schema = Joi.object({
     name: Joi.string().required(),
@@ -159,6 +153,14 @@ app.post("/adminLogin2", login_RateLimiter, async (req, res) => {
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
+  // Validate reCAPTCHA
+  const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
+  if (!verifyHuman) {
+    return res
+      .status(400)
+      .send("reCAPTCHA verification failed. Please try again.");
+  }
+
   // Check if the admin already exists
   let resp = await client
     .db("Assignment")
@@ -592,11 +594,13 @@ app.post("/userLogin", async (req, res) => {
       .status(400)
       .send("gmail,password and g_recaptcha_response are required. ( ˘ ³˘)❤");
   }
-  const isRecaptchaValid = await verifyRecaptchaToken(
-    req.body.g_recaptcha_response
-  );
-  if (!isRecaptchaValid)
-    return res.status(400).send("Invalid reCAPTCHA. Please try again. (˘︹˘)");
+  // Validate reCAPTCHA
+  const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
+  if (!verifyHuman) {
+    return res
+      .status(400)
+      .send("reCAPTCHA verification failed. Please try again.");
+  }
   //Check if the user is the player with the email
   let resp = await client.db("Assignment").collection("players").findOne({
     email: req.body.gmail,
@@ -1784,6 +1788,9 @@ function delayRandom() {
   const randomDelay = Math.floor(Math.random() * 2000) + 2000; // Random delay between 2000ms and 4000ms
   return new Promise((resolve) => setTimeout(resolve, randomDelay));
 }
+
+const recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY;
+const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
 
 // / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or false
 async function verifyRecaptchaToken(token) {
