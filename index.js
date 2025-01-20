@@ -15,12 +15,16 @@ const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
 const app = express();
 const port = process.env.PORT || 3000;
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { message } = require("statuses");
-const uri = `mongodb+srv://b022210249:${process.env.MongoDb_password}@cluster0.qexjojg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+//Setup mongodb
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const uri = process.env.MONGO_URL;
+const credentials = process.env.MONGO_CERT_PATH;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
+  tlsCertificateKeyFile: credentials,
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -1912,16 +1916,22 @@ function verifyToken(req, res, next) {
   const token = authHeader && authHeader.split(" ")[1];
   //split "Bearer <decode>"-->To take only decode
   if (token == null) return res.sendStatus(401);
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    console.log(err);
-
-    if (err) return res.sendStatus(403);
-
-    req.identify = decoded;
-
-    next();
-  });
+  // Specify the allowed algorithms
+  jwt.verify(
+    token,
+    process.env.JWT_SECRET,
+    { algorithms: ["HS256", "RS256"] },
+    (err, decoded) => {
+      console.log;
+      if (err) return res.sendStatus(403);
+      // Additional security checks
+      if (Date.now() >= decoded.exp * 1000) {
+        return res.sendStatus(401); // Token expired
+      }
+      req.identify = decoded;
+      next();
+    }
+  );
 }
 
 async function run() {
