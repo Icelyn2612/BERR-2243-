@@ -1,16 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>reCAPTCHA Test</title>
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</title>
+    <script src="https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}"></script>
+    <style>
+        body {background-color: #f0f0f0; font-family: Arial, sans-serif;}
+        h1 {padding-top: 150px; padding-bottom: 40px; font-size: 80px;}
+        .container {text-align: center;}
+        input {font-size: 28px; margin-top: 30px;}
+    </style>
 </head>
 <body>
-  <form action="https://berr2243wsw.azurewebsites.net/userLogin" method="POST">
-    <div class="g-recaptcha" data-sitekey="RECAPTCHA_SITE_KEY"></div>
-    <br/>
-    <input type="submit" value="Submit">
-  </form>
+    <div class="container">
+        <h1>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</h1>
+        <form id="loginForm">
+            <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <script>
+        grecaptcha.ready(function() {
+            grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'submit'}).then(function(token) {
+                document.getElementById('g-recaptcha-response').value = token;
+            });
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const recaptchaResponse = document.getElementById('g-recaptcha-response').value;
+            
+            fetch('/GiveMeRecaptcha', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({recaptcha: recaptchaResponse})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('reCAPTCHA passed!');
+                    // Proceed with form submission
+                } else {
+                    alert('reCAPTCHA failed. Please try again.');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

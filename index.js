@@ -5,10 +5,13 @@ const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet"); //HTTPS
 //const csurf = require("csurf"); //CSRF
+//const csrfProtection = csurf({ cookie: true });
 const mongoSanitize = require("express-mongo-sanitize"); //Input JSON
 const cookieParser = require("cookie-parser"); //JSON parser
 const axios = require("axios"); //reCAPTCHA server
-const router = express.Router(); //
+//const router = express.Router();
+const Joi = require("joi");
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -37,6 +40,9 @@ const login_RateLimiter = rateLimit({
 app.use(express.json()); // Middleware to parse JSON requests
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+// Middleware setup
+// app.use(csrfProtection);
+// app.use(customSanitize);
 
 app.use(cookieParser()); // Middleware to parse cookies
 
@@ -63,7 +69,10 @@ app.use(
     noSniff: true,
   })
 );
-
+// Route to get CSRF token
+// app.get("/csrf-token", (req, res) => {
+//   res.json({ csrfToken: req.csrfToken() });
+// });
 // Use Middleware express-mongo-sanitize to sanitize inputs before they are sent to the database
 // app.use((req, res, next) => {
 //   req.body = mongoSanitize(req.body);
@@ -138,6 +147,11 @@ app.use(customSanitize);
 
 // Admin Login API
 app.post("/adminLogin", login_RateLimiter, async (req, res) => {
+  //Validate CSRF token
+  // const csrfToken = req.body._csrf;
+  // if (!csrfToken || csrfToken !== req.csrfToken()) {
+  //   return res.status(403).send("Invalid CSRF token.");
+  // }
   if (
     !req.body.name ||
     !req.body.email ||
@@ -488,7 +502,7 @@ app.delete(
 
 //API FOR USERS
 //Registration account for users
-app.post("/register", async (req, res) => {
+app.post("/register", login_RateLimiter, async (req, res) => {
   // Check if name, email and password and fields are provided
   if (
     !req.body.name ||
@@ -595,7 +609,13 @@ app.post("/register", async (req, res) => {
 });
 
 //login for users
-app.post("/userLogin", async (req, res) => {
+app.post("/userLogin", login_RateLimiter, async (req, res) => {
+  // Validate CSRF token
+  // const csrfToken = req.body._csrf;
+  // if (!csrfToken || csrfToken !== req.csrfToken()) {
+  //   return res.status(403).send("Invalid CSRF token.");
+  // }
+
   // Check if gmail, passd and recaptcha fields are provided
   if (!req.body.email || !req.body.password || !req.body.g_recaptcha_response) {
     //if not provided, return an error
@@ -622,7 +642,7 @@ app.post("/userLogin", async (req, res) => {
   }
   //Check if the user is the player with the email
   let resp = await client.db("Assignment").collection("players").findOne({
-    email: req.body.gmail,
+    email: req.body.email,
   });
 
   await delayRandom(); //Random delay between 2 and 4 seconds for both valid and invalid responses
@@ -1795,7 +1815,11 @@ app.get("/", (req, res) => {
   );
   //res.send("FOR BATTLE!! GAME ( -ω ･)▄︻┻┳══━一  ");
 });
-
+app.get("/recaptchavalid", (req, res) => {
+  res.send(
+    `<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</title> <script src="https://www.google.com/recaptcha/api.js" async defer></script> <style> body { background-color: #1e1e1e; color: #fff; font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } h1 { font-size: 50px; margin-bottom: 20px; } .container { text-align: center; } .g-recaptcha { display: flex; justify-content: center; align-items: center; margin: 20px; transform: scale(1.5); } form { display: flex; flex-direction: column; align-items: center; background-color: #2c2c2c; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); } input[type="submit"] { background-color: #ff4500; color: #fff; border: none; padding: 10px 20px; font-size: 20px; cursor: pointer; margin-top: 20px; border-radius: 5px; transition: background-color 0.3s ease; } input[type="submit"]:hover { background-color: #e03e00; } </style> <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> </head> <body> <div class="container"> <h1>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</h1> <form id="loginForm" action="/userLogin" method="POST"> <div class="g-recaptcha" data-sitekey="${recaptchaSiteKey}"></div> <input type="submit" value="Submit"> </form> </div> </body> </html>`
+  );
+});
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
@@ -1820,11 +1844,11 @@ function delayRandom() {
 const recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY;
 const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
 
-// / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or false
+// / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or falseasync function verifyRecaptchaToken(token) {
 async function verifyRecaptchaToken(token) {
   try {
     const response = await axios.post(
-      `https://www.google.com/recaptcha/api/siteverify`,
+      "https://www.google.com/recaptcha/api/siteverify",
       null,
       {
         params: {
@@ -1833,12 +1857,34 @@ async function verifyRecaptchaToken(token) {
         },
       }
     );
-    return response.data.success;
+
+    console.log("reCAPTCHA response:", response.data); // Log full response
+
+    // Check success and score (if using reCAPTCHA v3)
+    if (response.data.success) {
+      return response.data;
+    } else {
+      console.error(
+        "reCAPTCHA verification failed:",
+        response.data["error-codes"]
+      );
+      return false;
+    }
   } catch (error) {
     console.error("reCAPTCHA verification failed", error);
     return false;
   }
 }
+
+app.post("/GiveMeRecaptcha", async (req, res) => {
+  const recaptchaResponse = req.body.recaptcha;
+  const validateHuman = await verifyRecaptchaToken(recaptchaResponse);
+  if (validateHuman) {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});
 
 // Function to validate password strength
 function passwordValidation(password) {
