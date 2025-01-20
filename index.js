@@ -2,11 +2,83 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet"); //HTTPS
+const csurf = require("csurf"); //CSRF
+const mongoSanitize = require("express-mongo-sanitize"); //Input JSON
+const cookieParser = require("cookie-parser"); //JSON parser
+const axios = require("axios"); //HTTP server
+const router = express.Router(); //
+
 const app = express();
 const port = process.env.PORT || 3000;
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { message } = require("statuses");
+const uri = `mongodb+srv://b022210249:${process.env.MongoDb_password}@cluster0.qexjojg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
-app.use(express.json());
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+// Rate limiter for login attempts
+const login_RateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message:
+    "Too many login attempts from this IP, please try again after 15 minutes",
+});
+
+// Middleware setup
+app.use(express.json()); // Middleware to parse JSON requests
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
+app.use(cookieParser()); // Middleware to parse cookies
+
+//Use Helmet to set security-related HTTP headers
+app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "https://www.google.com",
+          "https://www.gstatic.com",
+        ],
+        frameSrc: ["https://www.google.com"],
+      },
+    },
+    referrerPolicy: { policy: "no-referrer" },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    hidePoweredBy: true,
+    xssFilter: false,
+    noSniff: true,
+  })
+);
+
+// Use Middleware express-mongo-sanitize to sanitize inputs before they are sent to the database
+app.use((req, res, next) => {
+  req.body = mongoSanitize(req.body);
+  req.query = mongoSanitize(req.query);
+  req.params = mongoSanitize(req.params);
+  next();
+});
+
+// Enable CSRF protection middleware
+app.use(csurf({ cookie: true }));
+// Route to get CSRF token
+app.get("/csrf-token", (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
 //API FOR ADMIN
 //login for admin
 app.post("/adminLogin", async (req, res) => {
@@ -55,6 +127,63 @@ app.post("/adminLogin", async (req, res) => {
   }
 });
 
+// Admin Login API
+app.post("/adminLogin2", login_RateLimiter, async (req, res) => {
+  if (
+    !req.body.name ||
+    !req.body.email ||
+    !req.body.password ||
+    !req.body.g_recaptcha_response
+  ) {
+    return res
+      .status(400)
+      .send(
+        "name,email,password and g_recaptcha_response are required. ( ˘ ³˘)❤"
+      );
+  }
+  // Validate reCAPTCHA
+  const verifyHuman = await verifyRecaptchaToken(g_recaptcha_response);
+  if (!verifyHuman) {
+    return res
+      .status(400)
+      .send("reCAPTCHA verification failed. Please try again.");
+  }
+  // Input Validation
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+    g_recaptcha_response: Joi.string().required(),
+  });
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).send(error.details[0].message);
+  }
+  // Check if the admin already exists
+  let resp = await client
+    .db("Assignment")
+    .collection("admin")
+    .findOne({ $and: [{ name: req.body.name }, { email: req.body.email }] });
+  if (!resp) {
+    return res.status(400).send("Admin not found ⸨◺_◿⸩");
+  }
+  // Check if password is correct
+  if (bcrypt.compareSync(password, resp.password)) {
+    // Create JWT
+    const token = jwt.sign(
+      { id: resp._id, name: resp.name, email: resp.email, roles: resp.roles },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.status(200).send({
+      message:
+        "Admin login successful. Do ur thing in the admin panel!!\n(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )",
+      token,
+    });
+  } else {
+    res.status(400).send("Wrong Password ⸨◺_◿⸩");
+  }
+});
 //Add a new chest
 app.post("/chests", verifyToken, async (req, res) => {
   //Check if the user is an admin
@@ -360,6 +489,16 @@ app.post("/register", async (req, res) => {
       .status(400)
       .send("name,email,password and gender are required.\n 안돼!!!(ू˃̣̣̣̣̣̣︿˂̣̣̣̣̣̣ ू)");
   }
+
+  // Validate the password
+  if (!passwordValidation(req.body.password)) {
+    return res
+      .status(400)
+      .send(
+        "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character."
+      );
+  }
+
   // Check if the username or email already exists
   let existing =
     (await client.db("Assignment").collection("players").findOne({
@@ -446,18 +585,23 @@ app.post("/register", async (req, res) => {
 
 //login for users
 app.post("/userLogin", async (req, res) => {
-  // Check if name and email fields are provided
-  if (!req.body.name || !req.body.email) {
+  // Check if gmail, passd and recaptcha fields are provided
+  if (!req.body.gmail || !req.body.password || !req.body.g_recaptcha_response) {
     //if not provided, return an error
-    return res.status(400).send("name and email are required. ( ˘ ³˘)❤");
+    return res
+      .status(400)
+      .send("gmail,password and g_recaptcha_response are required. ( ˘ ³˘)❤");
   }
-  //Check if the user is the player with the name and email
-  let resp = await client
-    .db("Assignment")
-    .collection("players")
-    .findOne({
-      $and: [{ name: req.body.name }, { email: req.body.email }],
-    });
+  const isRecaptchaValid = await verifyRecaptchaToken(
+    req.body.g_recaptcha_response
+  );
+  if (!isRecaptchaValid)
+    return res.status(400).send("Invalid reCAPTCHA. Please try again. (˘︹˘)");
+  //Check if the user is the player with the email
+  let resp = await client.db("Assignment").collection("players").findOne({
+    email: req.body.gmail,
+  });
+  await delayRandom(); //Random delay between 2 and 4 seconds for both valid and invalid responses
   if (!resp) {
     res.send("User not found ⸨◺_◿⸩");
   } else {
@@ -477,6 +621,7 @@ app.post("/userLogin", async (req, res) => {
           { expiresIn: "1h" }
         );
         console.log(token);
+
         res.status(200).send({
           message:
             "Login successful. Remember to gain your starter pack!\n(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )",
@@ -1630,17 +1775,56 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const { message } = require("statuses");
-const uri = `mongodb+srv://b022210249:${process.env.MongoDb_password}@cluster0.qexjojg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+// // Function to simulate time delay (in milliseconds)
+// function delay(ms) {
+//   return new Promise(resolve => setTimeout(resolve, ms));
+// }
+function delayRandom() {
+  // Generate a random delay between 2 and 4 seconds (2000ms to 4000ms)
+  const randomDelay = Math.floor(Math.random() * 2000) + 2000; // Random delay between 2000ms and 4000ms
+  return new Promise((resolve) => setTimeout(resolve, randomDelay));
+}
+
+// / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or false
+async function verifyRecaptchaToken(token) {
+  try {
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      null,
+      {
+        params: {
+          secret: process.env.RECAPTCHA_SECRET_KEY,
+          response: token,
+        },
+      }
+    );
+    return response.data.success;
+  } catch (error) {
+    console.error("reCAPTCHA verification failed", error);
+    return false;
+  }
+}
+
+// Function to validate password strength
+function passwordValidation(password) {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasDigit = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  if (
+    password.length >= minLength &&
+    hasUpperCase &&
+    hasLowerCase &&
+    hasDigit &&
+    hasSpecialChar
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;

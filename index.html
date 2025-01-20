@@ -47,13 +47,13 @@
     <script>
         // Get the user's timezone
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        document.getElementById('timezone').textContent = Your current timezone is: ${timezone};
+        document.getElementById('timezone').textContent = `Your current timezone is: ${timezone}`;
 
         // Function to update the current time
         function updateTime() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { timeZone: timezone, hour12: true });
-            document.getElementById('current-time').textContent = Current time: ${timeString};
+            document.getElementById('current-time').textContent = `Current time: ${timeString}`;
         }
 
         // Update the time every second
@@ -79,7 +79,7 @@
         };
 
         ws.onmessage = (event) => {
-            logMessage(Message from server: ${event.data});
+            logMessage(`Message from server: ${event.data}`);
         };
 
         ws.onclose = () => {
@@ -87,7 +87,7 @@
         };
 
         ws.onerror = (error) => {
-            logMessage(WebSocket error: ${error.message});
+            logMessage(`WebSocket error: ${error.message}`);
         };
     </script>
 </body>
