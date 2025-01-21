@@ -11,7 +11,6 @@ const cookieParser = require("cookie-parser"); //JSON parser
 const axios = require("axios"); //reCAPTCHA server
 //const router = express.Router();
 const Joi = require("joi");
-const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -1846,9 +1845,6 @@ function delayRandom() {
   const randomDelay = Math.floor(Math.random() * 2000) + 2000; // Random delay between 2000ms and 4000ms
   return new Promise((resolve) => setTimeout(resolve, randomDelay));
 }
-
-const recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY;
-const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
 
 // / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or falseasync function verifyRecaptchaToken(token) {
 async function verifyRecAaptchaToken(token) {
