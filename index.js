@@ -1847,7 +1847,7 @@ function delayRandom() {
 }
 
 // / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or falseasync function verifyRecaptchaToken(token) {
-async function verifyRecAaptchaToken(token) {
+async function verifyRecaptchaToken(token) {
   try {
     const response = await axios.post(
       "https://www.google.com/recaptcha/api/siteverify",
