@@ -156,12 +156,7 @@ app.post("/adminLogin", login_RateLimiter, async (req, res) => {
   // if (!csrfToken || csrfToken !== req.csrfToken()) {
   //   return res.status(403).send("Invalid CSRF token.");
   // }
-  if (
-    !req.body.name ||
-    !req.body.email ||
-    !req.body.password ||
-    !req.body.g_recaptcha_response
-  ) {
+  if (!req.body.name || !req.body.email || !req.body.password) {
     return res
       .status(400)
       .send(
@@ -181,18 +176,19 @@ app.post("/adminLogin", login_RateLimiter, async (req, res) => {
     return res.status(400).send(error.details[0].message);
   }
   // Validate reCAPTCHA
-  const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
-  if (!verifyHuman) {
-    return res
-      .status(400)
-      .send("reCAPTCHA verification failed. Please try again.");
-  }
+  // const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
+  // if (!verifyHuman) {
+  //   return res
+  //     .status(400)
+  //     .send("reCAPTCHA verification failed. Please try again.");
+  // }
 
   // Check if the admin already exists
   let resp = await client
     .db("Assignment")
     .collection("admin")
     .findOne({ $and: [{ name: req.body.name }, { email: req.body.email }] });
+  await delayRandom(); //Random delay between 2 and 4 seconds for both valid and invalid responses
   if (!resp) {
     return res.status(400).send("Admin not found ⸨◺_◿⸩");
   }
@@ -1843,7 +1839,7 @@ function customSanitize(req, res, next) {
 
 // // Function to simulate time delay (in milliseconds)
 // function delay(ms) {
-//   return new Promise(resolve => setTimeout(resolve, ms));
+//   return new Promise(resoAlve => setTimeout(resolve, ms));
 // }
 function delayRandom() {
   // Generate a random delay between 2 and 4 seconds (2000ms to 4000ms)
@@ -1855,7 +1851,7 @@ const recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY;
 const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
 
 // / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or falseasync function verifyRecaptchaToken(token) {
-async function verifyRecaptchaToken(token) {
+async function verifyRecAaptchaToken(token) {
   try {
     const response = await axios.post(
       "https://www.google.com/recaptcha/api/siteverify",
