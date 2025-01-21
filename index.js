@@ -34,7 +34,7 @@ const client = new MongoClient(uri, {
 // Rate limiter for login attempts
 const login_RateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
+  max: 10, // Limit each IP to 5 requests per windowMs
   message:
     "Too many login attempts from this IP, please try again after 15 minutes",
 });
@@ -155,7 +155,12 @@ app.post("/adminLogin", login_RateLimiter, async (req, res) => {
   // if (!csrfToken || csrfToken !== req.csrfToken()) {
   //   return res.status(403).send("Invalid CSRF token.");
   // }
-  if (!req.body.name || !req.body.email || !req.body.password) {
+  if (
+    !req.body.name ||
+    !req.body.email ||
+    !req.body.password ||
+    !req.body.g_recaptcha_response
+  ) {
     return res
       .status(400)
       .send(
@@ -175,12 +180,12 @@ app.post("/adminLogin", login_RateLimiter, async (req, res) => {
     return res.status(400).send(error.details[0].message);
   }
   // Validate reCAPTCHA
-  // const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
-  // if (!verifyHuman) {
-  //   return res
-  //     .status(400)
-  //     .send("reCAPTCHA verification failed. Please try again.");
-  // }
+  const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
+  if (!verifyHuman) {
+    return res
+      .status(400)
+      .send("reCAPTCHA verification failed. Please try again.");
+  }
 
   // Check if the admin already exists
   let resp = await client
