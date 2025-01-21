@@ -17,6 +17,8 @@ const port = process.env.PORT || 3000;
 
 const { message } = require("statuses");
 
+recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY;
+
 //Setup mongodb
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = process.env.MONGO_URL;
