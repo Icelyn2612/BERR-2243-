@@ -1911,52 +1911,28 @@ function passwordValidation(password) {
   }
 }
 
-/*************  ✨ Codeium Command 🌟  *************/
-/**
- * Middleware to verify JWT token from the request authorization header.
- *
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next middleware function
- */
 function verifyToken(req, res, next) {
-  // Get the authorization header
   const authHeader = req.headers.authorization;
-
-  // Extract the token from the Bearer scheme
   const token = authHeader && authHeader.split(" ")[1];
-
-  // If no token is provided, send 401 Unauthorized
   //split "Bearer <decode>"-->To take only decode
   if (token == null) return res.sendStatus(401);
-
-  // Verify the token with specified algorithms
   // Specify the allowed algorithms
   jwt.verify(
     token,
     process.env.JWT_SECRET,
     { algorithms: ["HS256", "RS256"] },
     (err, decoded) => {
-      // If verification error occurs, send 403 Forbidden
       console.log;
       if (err) return res.sendStatus(403);
-
-      // Check if token is expired, send 401 Unauthorized if true
       // Additional security checks
       if (Date.now() >= decoded.exp * 1000) {
-        return res.sendStatus(401);
         return res.sendStatus(401); // Token expired
       }
-
-      // Attach decoded information to request object
       req.identify = decoded;
-
-      // Proceed to next middleware
       next();
     }
   );
 }
-/******  c198532b-9ec2-4179-8084-331b9556bfdf  *******/
 
 async function run() {
   try {
