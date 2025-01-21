@@ -16,9 +16,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const { message } = require("statuses");
-
-recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY;
-
 //Setup mongodb
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = process.env.MONGO_URL;
@@ -1817,15 +1814,10 @@ app.get("/", (req, res) => {
   );
   //res.send("FOR BATTLE!! GAME ( -ω ･)▄︻┻┳══━一  ");
 });
-// app.get("/recaptchavalid", (req, res) => {
-//   res.send(
-//     `<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</title> <script src="https://www.google.com/recaptcha/api.js" async defer></script> <style> body { background-color: #1e1e1e; color: #fff; font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } h1 { font-size: 50px; margin-bottom: 20px; } .container { text-align: center; } .g-recaptcha { display: flex; justify-content: center; align-items: center; margin: 20px; transform: scale(1.5); } form { display: flex; flex-direction: column; align-items: center; background-color: #2c2c2c; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); } input[type="submit"] { background-color: #ff4500; color: #fff; border: none; padding: 10px 20px; font-size: 20px; cursor: pointer; margin-top: 20px; border-radius: 5px; transition: background-color 0.3s ease; } input[type="submit"]:hover { background-color: #e03e00; } </style> <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> </head> <body> <div class="container"> <h1>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</h1> <form id="loginForm" action="/userLogin" method="POST"> <div class="g-recaptcha" data-sitekey="${recaptchaSiteKey}"></div> <input type="submit" value="Submit"> </form> </div> </body> </html>`
-//   );
-// });
 
 app.get("/recaptchavalid", (req, res) => {
   res.send(
-    `<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</title> <script src="https://www.google.com/recaptcha/api.js" async defer></script> <style> body { background-color: #1e1e1e; color: #fff; font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } h1 { font-size: 50px; margin-bottom: 20px; } .container { text-align: center; } .g-recaptcha { display: flex; justify-content: center; align-items: center; margin: 20px; transform: scale(1.5); } form { display: flex; flex-direction: column; align-items: center; background-color: #2c2c2c; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); } input[type="submit"] { background-color: #ff4500; color: #fff; border: none; padding: 10px 20px; font-size: 20px; cursor: pointer; margin-top: 20px; border-radius: 5px; transition: background-color 0.3s ease; } input[type="submit"]:hover { background-color: #e03e00; } </style> <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> </head> <body> <div class="container"> <h1>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</h1> <form id="loginForm" action="/userLogin" method="POST"> <div class="g-recaptcha" data-sitekey="${recaptchaSiteKey}"></div> <input type="submit" value="Submit"> </form> </div> </body> </html>`
+    `<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</title> <script src="https://www.google.com/recaptcha/api.js" async defer></script> <style> body { background-color: #1e1e1e; color: #fff; font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } h1 { font-size: 50px; margin-bottom: 20px; } .container { text-align: center; } .g-recaptcha { display: flex; justify-content: center; align-items: center; margin: 20px; transform: scale(1.5); } form { display: flex; flex-direction: column; align-items: center; background-color: #2c2c2c; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); } input[type="submit"] { background-color: #ff4500; color: #fff; border: none; padding: 10px 20px; font-size: 20px; cursor: pointer; margin-top: 20px; border-radius: 5px; transition: background-color 0.3s ease; } input[type="submit"]:hover { background-color: #e03e00; } </style> <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> </head> <body> <div class="container"> <h1>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</h1> <form id="loginForm" action="/userLogin" method="POST"> <div class="g-recaptcha" data-sitekey="${process.env.RECAPTCHA_SITE_KEY}"></div> <input type="submit" value="Submit"> </form> </div> </body> </html>`
   );
 });
 app.listen(port, () => {
@@ -1880,16 +1872,6 @@ async function verifyRecaptchaToken(token) {
     return false;
   }
 }
-
-app.post("/GiveMeRecaptcha", async (req, res) => {
-  const recaptchaResponse = req.body.recaptcha;
-  const validateHuman = await verifyRecaptchaToken(recaptchaResponse);
-  if (validateHuman) {
-    res.json({ success: true });
-  } else {
-    res.json({ success: false });
-  }
-});
 
 // Function to validate password strength
 function passwordValidation(password) {
