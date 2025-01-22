@@ -18,7 +18,8 @@ const { message } = require("statuses");
 //Setup mongodb
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = process.env.MONGO_URL;
-const credentials = process.env.MONGO_CERT_PATH;
+const credentials =
+  "D:\\UTEM\\sem 5\\BERR3123 INFORMATION SECURITY\\Assignment\\MyCERT\\X509-cert-6182322632771355153.pem";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
