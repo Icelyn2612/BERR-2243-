@@ -1812,17 +1812,12 @@ app.get("/leaderboard", verifyToken, async (req, res) => {
 
 app.get("/", (req, res) => {
   res.send(
-    // __dirname +
-    //   "/public/index.html" +
-    "Welcome To My World!! ( -ω ･)▄︻┻┳══━一"
+    '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FOR BATTLE!! GAME</title><style>body {background-color: #1a1a1a;display: flex;justify content:center;align-items: center;height: 100vh;margin: 0;color:rgb(172, 40, 62);font-family: "Arial", sans-serif;overflow: hidden;}.background-words {position: absolute;top: 0;left: 0;width: 100%;height: 100%;z-index: -1;}.background-words div {position: absolute;font-size: 40px;color: rgba(255, 255, 255, 0.1);animation: float 10s infinite;}.title { font-size: 50px; text-align: center; animation: fadeIn 2s ease-in-out, moveIn 2s ease-in-out;}.sub-title { font-size: 30px; text-align: center;animation: fadeIn 2s ease-in-out 2s, moveIn 2s ease-in-out 2s; }.emoji { font-size: 60px;text-align: center;animation: fadeIn 2s ease-in-out 4s, moveIn 2s ease-in-out 4s;} @keyframes fadeIn { from { opacity: 0; }to { opacity: 1; } }@keyframes moveIn {from { transform: translateY(-50px); } to { transform: translateY(0); }} @keyframes float { 0% { transform: translateY(0) translateX(0); }50% { transform: translateY(50px) translateX(50px); }100% { transform: translateY(0) translateX(0); }}</style></head><body><div class="background-words"><div style="top: 10%; left: 15%;">BATTLE</div><div style="top: 20%; left: 50%;">GAME</div><div style="top: 30%; left: 25%;">ACTION</div><div style="top: 50%; left: 60%;">ADVENTURE</div><div style="top: 70%; left: 10%;">WIN</div></div><div class="title">FOR BATTLE!! GAME:</div><div class="sub-title">Welcome To My World!!</div><div class="emoji">( -ω ･)▄︻┻┳══━一</div></body></html>'
   );
-  //res.send("FOR BATTLE!! GAME ( -ω ･)▄︻┻┳══━一  ");
 });
 
 app.get("/recaptchavalid", (req, res) => {
-  res.send(
-    `<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</title> <script src="https://www.google.com/recaptcha/api.js" async defer></script> <style> body { background-color: #1e1e1e; color: #fff; font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } h1 { font-size: 50px; margin-bottom: 20px; } .container { text-align: center; } .g-recaptcha { display: flex; justify-content: center; align-items: center; margin: 20px; transform: scale(1.5); } form { display: flex; flex-direction: column; align-items: center; background-color: #2c2c2c; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); } input[type="submit"] { background-color: #ff4500; color: #fff; border: none; padding: 10px 20px; font-size: 20px; cursor: pointer; margin-top: 20px; border-radius: 5px; transition: background-color 0.3s ease; } input[type="submit"]:hover { background-color: #e03e00; } </style> <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> </head> <body> <div class="container"> <h1>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</h1> <form id="loginForm" action="/userLogin" method="POST"> <div class="g-recaptcha" data-sitekey="${process.env.RECAPTCHA_SITE_KEY}"></div> <input type="submit" value="Submit"> </form> </div> </body> </html>`
-  );
+  res.send(`>`);
 });
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
