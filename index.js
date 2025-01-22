@@ -636,6 +636,7 @@ app.post("/userLogin", async (req, res) => {
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
+
   // Validate reCAPTCHA
   const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
   if (!verifyHuman) {
@@ -1817,8 +1818,11 @@ app.get("/", (req, res) => {
 });
 
 app.get("/recaptchavalid", (req, res) => {
-  res.send(`>`);
+  res.send(
+    `<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</title> <script src="https://www.google.com/recaptcha/api.js" async defer></script> <style> body { background-color: #1e1e1e; color: #fff; font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } h1 { font-size: 50px; margin-bottom: 20px; } .container { text-align: center; } .g-recaptcha { display: flex; justify-content: center; align-items: center; margin: 20px; transform: scale(1.5); } form { display: flex; flex-direction: column; align-items: center; background-color: #2c2c2c; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); } input[type="submit"] { background-color: #ff4500; color: #fff; border: none; padding: 10px 20px; font-size: 20px; cursor: pointer; margin-top: 20px; border-radius: 5px; transition: background-color 0.3s ease; } input[type="submit"]:hover { background-color: #e03e00; } </style> <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> </head> <body> <div class="container"> <h1>Welcome To My World!! ( -ω ･)▄︻┻┳══━一</h1> <form id="loginForm" action="/userLogin" method="POST"> <div class="g-recaptcha" data-sitekey="${process.env.RECAPTCHA_SITE_KEY}"></div> <input type="submit" value="Submit"> </form> </div> </body> </html>`
+  );
 });
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
@@ -1853,21 +1857,19 @@ async function verifyRecaptchaToken(token) {
         },
       }
     );
-
     console.log("reCAPTCHA response:", response.data); // Log full response
-
     // Check success and score (if using reCAPTCHA v3)
     if (response.data.success) {
       return response.data;
     } else {
       console.error(
-        "reCAPTCHA verification failed:",
+        "reCAPTCHA verification failed1111:",
         response.data["error-codes"]
       );
       return false;
     }
   } catch (error) {
-    console.error("reCAPTCHA verification failed", error);
+    console.error("reCAPTCHA verification failed2222", error);
     return false;
   }
 }
