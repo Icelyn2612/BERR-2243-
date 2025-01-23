@@ -21,13 +21,18 @@ const uri = process.env.MONGO_URL;
 const credentials = process.env.MONGO_CERT_PATH;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// const client = new MongoClient(uri, {
+//   tlsCertificateKeyFile: credentials,
+//   serverApi: {
+//     version: ServerApiVersion.v1,
+//     strict: true,
+//     deprecationErrors: true,
+//   },
+// });
+
 const client = new MongoClient(uri, {
   tlsCertificateKeyFile: credentials,
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
+  serverApi: ServerApiVersion.v1,
 });
 
 // Rate limiter for login attempts
