@@ -16,7 +16,7 @@ const port = process.env.PORT || 3000;
 
 const { message } = require("statuses");
 //Setup mongodb
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = process.env.MONGO_URL;
 const credentials = process.env.MONGO_CERT_PATH;
 
