@@ -163,7 +163,7 @@ app.post("/adminLogin", async (req, res) => {
     !req.body.name ||
     !req.body.email ||
     !req.body.password ||
-    !req.body['g_recaptcha_response']
+    !req.body["g_recaptcha_response"]
   ) {
     return res
       .status(400)
@@ -177,14 +177,16 @@ app.post("/adminLogin", async (req, res) => {
     name: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().required(),
-    "g_recaptcha_response": Joi.string().required(),
+    g_recaptcha_response: Joi.string().required(),
   });
   const { error } = schema.validate(req.body);
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
   // Validate reCAPTCHA
-  const verifyHuman = await verifyRecaptchaToken(req.body['g_recaptcha_response']);
+  const verifyHuman = await verifyRecaptchaToken(
+    req.body["g_recaptcha_response"]
+  );
   if (!verifyHuman) {
     return res
       .status(400)
@@ -1858,8 +1860,6 @@ async function verifyRecaptchaToken(token) {
   return response.data.success;
 }
 
-/*************  ✨ Codeium Command 🌟  *************/
-const PasswordValidation = (password) => {
 // Function to validate password strength
 function passwordValidation(password) {
   const minLength = 8;
@@ -1868,22 +1868,18 @@ function passwordValidation(password) {
   const hasDigit = /\d/.test(password);
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-  return (
   if (
     password.length >= minLength &&
     hasUpperCase &&
     hasLowerCase &&
     hasDigit &&
     hasSpecialChar
-  );
-};
   ) {
     return true;
   } else {
     return false;
   }
 }
-/******  a5c618f3-4384-4e1a-95d0-e5b728766abd  *******/
 
 function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;
