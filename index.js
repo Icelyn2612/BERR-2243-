@@ -1849,34 +1849,13 @@ function delayRandom() {
   return new Promise((resolve) => setTimeout(resolve, randomDelay));
 }
 
-// / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or falseasync function verifyRecaptchaToken(token) {
+// / Verify reCAPTCHA Token at Google’s reCAPTCHA and returns true if the verification is successful or false
 async function verifyRecaptchaToken(token) {
-  try {
-    const response = await axios.post(
-      "https://www.google.com/recaptcha/api/siteverify",
-      null,
-      {
-        params: {
-          secret: process.env.RECAPTCHA_SECRET_KEY,
-          response: token,
-        },
-      }
-    );
-    console.log("reCAPTCHA response:", response.data); // Log full response
-    // Check success and score (if using reCAPTCHA v3)
-    if (response.data.success) {
-      return response.data;
-    } else {
-      console.error(
-        "reCAPTCHA verification failed1111:",
-        response.data["error-codes"]
-      );
-      return false;
-    }
-  } catch (error) {
-    console.error("reCAPTCHA verification failed2222", error);
-    return false;
-  }
+  const response = await axios.post(
+    `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+  );
+  console.log("reCAPTCHA response:", response.data);
+  return response.data.success;
 }
 
 // Function to validate password strength
