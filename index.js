@@ -652,7 +652,7 @@ app.post("/userLogin", async (req, res) => {
   const verifyHuman = await verifyRecaptchaToken(
     req.body['g_recaptcha_response']
   );
-  if (!verifyHuman) {
+  if (verifyHuman) {
     return res
       .status(400)
       .send("reCAPTCHA verification failed. Please try again.");
