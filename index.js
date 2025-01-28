@@ -38,7 +38,7 @@ const client = new MongoClient(uri, {
 // Rate limiter for login attempts
 const rateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
+  max: 15, // Limit each IP to 5 requests per windowMs
   message:
     "Too many login attempts from this IP, please try again after 15 minutes",
 });
@@ -653,7 +653,6 @@ app.post("/userLogin", async (req, res) => {
     req.body['g_recaptcha_response']
   );
   if (verifyHuman) {
-    // if (!verifyHuman) {
     return res
       .status(400)
       .send("reCAPTCHA verification failed. Please try again.");
