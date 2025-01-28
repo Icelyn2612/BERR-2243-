@@ -619,7 +619,7 @@ app.post("/register", rateLimiter, async (req, res) => {
 });
 
 //login for users
-app.post("/userLogin", rateLimiter, async (req, res) => {
+app.post("/userLogin", async (req, res) => {
   // Validate CSRF token
   // const csrfToken = req.body._csrf;
   // if (!csrfToken || csrfToken !== req.csrfToken()) {
