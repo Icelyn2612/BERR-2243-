@@ -12,7 +12,7 @@ const axios = require("axios"); //reCAPTCHA server
 //const router = express.Router();
 const Joi = require("joi");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 const { message } = require("statuses");
 //Setup mongodb
@@ -36,7 +36,7 @@ const client = new MongoClient(uri, {
 });
 
 // Rate limiter for login attempts
-const login_RateLimiter = rateLimit({
+const rateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // Limit each IP to 5 requests per windowMs
   message:
@@ -177,7 +177,7 @@ app.post("/adminLogin", async (req, res) => {
     name: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().required(),
-    g_recaptcha_response: Joi.string().required(),
+    g_recaptcha_respons: Joi.string().required(),
   });
   const { error } = schema.validate(req.body);
   if (error) {
@@ -512,7 +512,7 @@ app.delete(
 
 //API FOR USERS
 //Registration account for users
-app.post("/register", async (req, res) => {
+app.post("/register", rateLimiter, async (req, res) => {
   // Check if name, email and password and fields are provided
   if (
     !req.body.name ||
@@ -619,7 +619,7 @@ app.post("/register", async (req, res) => {
 });
 
 //login for users
-app.post("/userLogin", async (req, res) => {
+app.post("/userLogin", rateLimiter, async (req, res) => {
   // Validate CSRF token
   // const csrfToken = req.body._csrf;
   // if (!csrfToken || csrfToken !== req.csrfToken()) {
@@ -627,7 +627,11 @@ app.post("/userLogin", async (req, res) => {
   // }
 
   // Check if gmail, passd and recaptcha fields are provided
-  if (!req.body.email || !req.body.password || !req.body.g_recaptcha_response) {
+  if (
+    !req.body.email ||
+    !req.body.password ||
+    !req.body["g_recaptcha_response"]
+  ) {
     //if not provided, return an error
     return res
       .status(400)
@@ -645,7 +649,9 @@ app.post("/userLogin", async (req, res) => {
   }
 
   // Validate reCAPTCHA
-  const verifyHuman = await verifyRecaptchaToken(req.body.g_recaptcha_response);
+  const verifyHuman = await verifyRecaptchaToken(
+    req.body["g_recaptcha_response"]
+  );
   if (!verifyHuman) {
     return res
       .status(400)
