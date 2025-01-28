@@ -163,7 +163,7 @@ app.post("/adminLogin", async (req, res) => {
     !req.body.name ||
     !req.body.email ||
     !req.body.password ||
-    !req.body["g_recaptcha_response"]
+    !req.body['g_recaptcha_response']
   ) {
     return res
       .status(400)
@@ -185,7 +185,7 @@ app.post("/adminLogin", async (req, res) => {
   }
   // Validate reCAPTCHA
   const verifyHuman = await verifyRecaptchaToken(
-    req.body["g_recaptcha_response"]
+    req.body['g_recaptcha_response']
   );
   if (!verifyHuman) {
     return res
@@ -630,7 +630,7 @@ app.post("/userLogin", async (req, res) => {
   if (
     !req.body.email ||
     !req.body.password ||
-    !req.body["g_recaptcha_response"]
+    !req.body['g_recaptcha_response']
   ) {
     //if not provided, return an error
     return res
@@ -641,7 +641,7 @@ app.post("/userLogin", async (req, res) => {
   const schema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
-    g_recaptcha_response: Joi.string().required(),
+    'g_recaptcha_response': Joi.string().required(),
   });
   const { error } = schema.validate(req.body);
   if (error) {
@@ -650,7 +650,7 @@ app.post("/userLogin", async (req, res) => {
 
   // Validate reCAPTCHA
   const verifyHuman = await verifyRecaptchaToken(
-    req.body["g_recaptcha_response"]
+    req.body['g_recaptcha_response']
   );
   if (!verifyHuman) {
     return res
