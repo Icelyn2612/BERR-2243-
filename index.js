@@ -62,7 +62,7 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc: [
           "'self'",
-          "https://www.google.com",
+          
           "https://www.gstatic.com",
         ],
         frameSrc: ["https://www.google.com"],
@@ -619,7 +619,7 @@ app.post("/register", rateLimiter, async (req, res) => {
 });
 
 //login for users
-app.post("/userLogin", async (req, res) => {
+app.post("/userLogin", rateLimiter,async (req, res) => {
   // Validate CSRF token
   // const csrfToken = req.body._csrf;
   // if (!csrfToken || csrfToken !== req.csrfToken()) {
