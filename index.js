@@ -1846,10 +1846,6 @@ function customSanitize(req, res, next) {
   next();
 }
 
-// // Function to simulate time delay (in milliseconds)
-// function delay(ms) {
-//   return new Promise(resoAlve => setTimeout(resolve, ms));
-// }
 function delayRandom() {
   // Generate a random delay between 2 and 4 seconds (2000ms to 4000ms)
   const randomDelay = Math.floor(Math.random() * 2000) + 2000; // Random delay between 2000ms and 4000ms
@@ -1871,7 +1867,7 @@ function passwordValidation(password) {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasDigit = /\d/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const hasSpecialChar = /[!@#%^&*(),.?":{}|<>]/.test(password);
 
   if (
     password.length >= minLength &&
